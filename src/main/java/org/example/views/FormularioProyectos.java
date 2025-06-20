@@ -1,7 +1,9 @@
 package org.example.views;
 import org.example.dto.ProyectoTablaDto;
+import org.example.dto.SolicitudTablaDto;
 import org.example.models.MaterialModel;
 import org.example.models.ProyectosModel;
+import org.example.models.SolicitudMaterialModel;
 import org.example.models.UsuarioModel;
 
 import javax.swing.*;
@@ -57,6 +59,13 @@ public class FormularioProyectos extends JFrame {
     private JButton btnLimpiarCamposMaterial;
     private JPanel contenedorGuardarMateriales;
     private JButton btnLimpiarBusqueda;
+    private JPanel SOLICITUDES;
+    private JButton activasButton;
+    private JButton rangoDeFechaButton;
+    private JButton porMaterialButton;
+    private JButton vencidasButton;
+    private JTable tablaSolicitudes;
+    private JScrollPane scrollPaneSolicitudes;
 
     JPopupMenu menu = new JPopupMenu();
     JMenuItem editarItem = new JMenuItem("Editar");
@@ -65,6 +74,7 @@ public class FormularioProyectos extends JFrame {
 
     List<ProyectoTablaDto> listaProyectosActivos = new ArrayList<>();
     List<MaterialModel> listaMateriales = new ArrayList<>();
+    List<SolicitudTablaDto> listaSolicitudes = new ArrayList<>();
 
 
     //items seleccionados de las tablas
@@ -80,6 +90,7 @@ public class FormularioProyectos extends JFrame {
         cargarListadoDeProyectosActivos();
         cargarEncargadosProyecto();
         cargarListaMateriales();
+        cargarListaSolicitudesMaterial();
         menu.add(editarItem);
         menu.add(eliminarItem);
         menu.add(solicitarMaterial);
@@ -249,6 +260,9 @@ public class FormularioProyectos extends JFrame {
             }
         });
     }
+
+
+    //CARGAR LISTAS
     private void cargarListadoDeProyectosActivos() {
         try {
             ProyectosModel proyectosModel = new ProyectosModel();
@@ -319,6 +333,34 @@ public class FormularioProyectos extends JFrame {
             e.printStackTrace();
         }
     }
+    private void cargarListaSolicitudesMaterial(){
+        try {
+            listaSolicitudes.clear();
+            SolicitudMaterialModel solicitudMaterialModel = new SolicitudMaterialModel();
+            listaSolicitudes = solicitudMaterialModel.listarSolicitudesPendientesNoTratadas();
+            DefaultTableModel modelo = new DefaultTableModel(
+                    new String[]{"ID","Solicitado para el", "Cantidad","Medida", "Material","Descripción","Solicitado por"}, 0
+            );
+            for (SolicitudTablaDto a : listaSolicitudes) {
+                modelo.addRow(new Object[]{a.getId(),a.getFecha_solicitud(),a.getCantidad_solicitada(),
+                        a.getUnidad_medida(),a.getNombre(),a.getComentario(),a.getNombreCompleto()});
+            }
+            tablaSolicitudes.setModel(modelo);
+            int totalWidth = tableMateriales.getPreferredScrollableViewportSize().width;
+            tablaSolicitudes.getColumnModel().getColumn(0).setPreferredWidth((int) (totalWidth * 0.05)); // ID
+            tablaSolicitudes.getColumnModel().getColumn(1).setPreferredWidth((int) (totalWidth * 0.15)); // Fecha
+            tablaSolicitudes.getColumnModel().getColumn(2).setPreferredWidth((int) (totalWidth * 0.10)); // Cantidad
+            tablaSolicitudes.getColumnModel().getColumn(3).setPreferredWidth((int) (totalWidth * 0.10)); // Medida
+            tablaSolicitudes.getColumnModel().getColumn(4).setPreferredWidth((int) (totalWidth * 0.30)); // Material
+            tablaSolicitudes.getColumnModel().getColumn(5).setPreferredWidth((int) (totalWidth * 0.20)); // Comentario
+            tablaSolicitudes.getColumnModel().getColumn(6).setPreferredWidth((int) (totalWidth * 0.10)); // Solicitado por
+            DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+            leftRenderer.setHorizontalAlignment(SwingConstants.LEFT);
+            tablaSolicitudes.getColumnModel().getColumn(2).setCellRenderer(leftRenderer); // Cantidad alineada
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
     //SETEAR INFORMACION
@@ -363,7 +405,7 @@ public class FormularioProyectos extends JFrame {
     }
 
 
-    //CARGAR TABLAS
+    //CARGAR COMBOBOX
     private void cargarEncargadosProyecto() {
         try {
             UsuarioModel user = new UsuarioModel();

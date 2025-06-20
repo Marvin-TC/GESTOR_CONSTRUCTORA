@@ -1,12 +1,10 @@
 package org.example.models;
 
 import org.example.JDBCUtil;
+import org.example.dto.SolicitudTablaDto;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -129,8 +127,24 @@ public class SolicitudMaterialModel {
     private static final String SQL_INSERTAR = " INSERT INTO solicitudes_materiales (proyecto_id, material_id, solicitado_por, cantidad_solicitada, fecha_solicitud, comentario) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String SQL_ACTUALIZAR = " UPDATE solicitudes_materiales SET proyecto_id = ?, material_id = ?, solicitado_por = ?, cantidad_solicitada = ?, fecha_solicitud = ?, estado = ?, comentario = ?, fecha_respuesta = ?, tratado = ? WHERE id = ?";
     private static final String SQL_ELIMINAR_LOGICO = " UPDATE solicitudes_materiales SET tratado = TRUE, estado = 'RECHAZADA' WHERE id = ? ";
-    private static final String SQL_LISTAR_PENDIENTES_NO_TRATADOS = "SELECT * FROM solicitudes_materiales WHERE estado = 'PENDIENTE' AND tratado = FALSE";
-
+    private static final String SQL_LISTAR_PENDIENTES_NO_TRATADOS = """
+    SELECT 
+        sm.id,
+        m.nombre AS nombre,
+        sm.cantidad_solicitada,
+        m.unidad_medida,
+        sm.fecha_solicitud,
+        sm.comentario,
+        CONCAT(u.nombres, ' ', u.apellidos) AS nombreCompleto
+    FROM 
+        solicitudes_materiales sm
+    JOIN 
+        materiales m ON sm.material_id = m.id
+    JOIN 
+        usuarios u ON sm.solicitado_por = u.id
+    WHERE 
+        sm.estado = 'PENDIENTE' AND sm.tratado = FALSE
+    """;
 
     public void guardar(SolicitudMaterialModel s) throws Exception {
         try (Connection con = JDBCUtil.getConection();
@@ -168,15 +182,25 @@ public class SolicitudMaterialModel {
         }
     }
 
-    public List<SolicitudMaterialModel> listarPendientesNoTratados() throws Exception {
-        List<SolicitudMaterialModel> lista = new ArrayList<>();
+    public List<SolicitudTablaDto> listarSolicitudesPendientesNoTratadas() throws Exception {
+        List<SolicitudTablaDto> lista = new ArrayList<>();
         try (Connection con = JDBCUtil.getConection();
              PreparedStatement ps = con.prepareStatement(SQL_LISTAR_PENDIENTES_NO_TRATADOS);
              ResultSet rs = ps.executeQuery()) {
-
             while (rs.next()) {
-                lista.add(mapearSolicitud(rs));
+                SolicitudTablaDto dto = new SolicitudTablaDto();
+                dto.setId(rs.getInt("id"));
+                dto.setNombre(rs.getString("nombre")); // nombre del material
+                dto.setCantidad_solicitada(rs.getBigDecimal("cantidad_solicitada"));
+                dto.setUnidad_medida(rs.getString("unidad_medida"));
+                dto.setFecha_solicitud(rs.getDate("fecha_solicitud"));
+                dto.setComentario(rs.getString("comentario"));
+                dto.setNombreCompleto(rs.getString("nombreCompleto")); // nombre completo del usuario
+                lista.add(dto);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new Exception("Error al listar solicitudes pendientes no tratadas", e);
         }
         return lista;
     }
