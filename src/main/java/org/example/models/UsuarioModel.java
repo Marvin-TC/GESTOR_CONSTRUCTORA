@@ -159,7 +159,7 @@ public class UsuarioModel {
 
     @Override
     public String toString() {
-        return nombres + " " + apellidos+" /"+departamento; // Esto es lo que se muestra en el JComboBox
+        return nombres + " " + apellidos; // Esto es lo que se muestra en el JComboBox
     }
 
     ///  metodos para accesar a la base de datos
@@ -171,10 +171,30 @@ public class UsuarioModel {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """;
 
-    private static final String SQL_LISTAR_POR_ROL = "SELECT * FROM usuarios WHERE rol_id = ?";
+    private static final String SQL_LISTAR_POR_ROL_INGENIERO = "SELECT * FROM usuarios WHERE rol_id = ?";
+    private static final String SQL_LISTAR_POR_ROLES_CONSTRUCCION = "SELECT * FROM usuarios WHERE rol_id IN (?, ?, ?, ?)";
     private static final String SQL_LISTAR_TODOS = "SELECT * FROM usuarios";
     private static final String SQL_BUSCAR_POR_ID = "SELECT * FROM usuarios WHERE id = ?";
     private static final String SQL_LOGIN = "SELECT * FROM usuarios WHERE correo = ? AND contrasena = ?";
+
+
+    public List<UsuarioModel> listarUsuariosPorRolesConstruccion(int rolId1,int rolId2,int rolId3,int rolId4) throws Exception {
+        List<UsuarioModel> lista = new ArrayList<>();
+        try (Connection con = JDBCUtil.getConection();
+             PreparedStatement ps = con.prepareStatement(SQL_LISTAR_POR_ROLES_CONSTRUCCION)) {
+            ps.setInt(1, rolId1);
+            ps.setInt(2, rolId2);
+            ps.setInt(3, rolId3);
+            ps.setInt(4, rolId4);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearUsuario(rs));
+                }
+            }
+        }
+        return lista;
+    }
+
 
     public UsuarioModel logearUsuario(String correo, String contrasena) throws Exception {
         UsuarioModel usuario = null;
@@ -231,7 +251,7 @@ public class UsuarioModel {
     public List<UsuarioModel> listarUsuariosPorRol(int rolId) throws Exception {
         List<UsuarioModel> lista = new ArrayList<>();
         try (Connection con = JDBCUtil.getConection();
-             PreparedStatement ps = con.prepareStatement(SQL_LISTAR_POR_ROL)) {
+             PreparedStatement ps = con.prepareStatement(SQL_LISTAR_POR_ROL_INGENIERO)) {
             ps.setInt(1, rolId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

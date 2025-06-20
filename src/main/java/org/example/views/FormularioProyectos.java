@@ -129,8 +129,7 @@ public class FormularioProyectos extends JFrame {
             }
         });
 
-        tableMateriales.addMouseListener(new MouseAdapter()
-        {
+        tableMateriales.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 opcionesClickIzquierdo(e);
@@ -175,12 +174,19 @@ public class FormularioProyectos extends JFrame {
                 // Confirmar y eliminar
             }
         });
-
-
-
-
-
-
+        solicitarMaterial.addActionListener(e -> {
+            int fila = tableProyectos.getSelectedRow();
+            if (fila != -1) {
+                Object id = tableProyectos.getValueAt(fila, 0);
+                try {
+                    ProyectoTablaDto proyecto = listaProyectosActivos.get(fila);
+                    new FormularioSolicitudMaterial(proyecto).setVisible(true); // pasar el objeto
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "No se pudo abrir el formulario");
+                }
+            }
+        });
 
         guardarProyectoButton.addActionListener(new ActionListener() {
             @Override
@@ -427,9 +433,7 @@ public class FormularioProyectos extends JFrame {
             e.printStackTrace();
         }
     }
-
-
-    //materialModel
+        //materialModel
     private void guardarNuevoMaterial() {
         try {
             MaterialModel material = new MaterialModel();

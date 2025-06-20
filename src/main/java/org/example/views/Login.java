@@ -34,6 +34,8 @@ public class Login extends JFrame {
                             if (usuarioLogeado != null) {
                                 FormularioProyectos ventanaPrincipal = new FormularioProyectos();
                                 ventanaPrincipal.setVisible(true);
+                                dispose();
+                                JOptionPane.showMessageDialog(null, "Bienvenido "+usuarioLogeado.getNombres());
                             } else {
                                 JOptionPane.showMessageDialog(null, "Correo o contraseña incorrectos");
                             }

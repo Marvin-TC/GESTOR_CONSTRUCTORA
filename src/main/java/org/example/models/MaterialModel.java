@@ -62,6 +62,11 @@ public class MaterialModel {
         this.activo = activo;
     }
 
+    @Override
+    public String toString() {
+        return nombre;
+    }
+
     /// metodos para accesar a la base de datos
     private static final String SQL_INSERTAR = "INSERT INTO materiales (nombre, unidad_medida, peso)VALUES (?, ?, ?)";
     private static final String SQL_LISTAR_TODOS = "SELECT * FROM materiales WHERE activo=1";
